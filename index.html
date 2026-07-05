@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Map Search - For my hosters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #f1e6cd;
+    --paper-dark: #e6d6b3;
+    --ink: #2a2118;
+    --ink-soft: #4a3d2c;
+    --brass: #a9843e;
+    --brass-bright: #c79a4b;
+    --teal: #33544c;
+    --line: rgba(42,33,24,0.25);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at top left, rgba(169,132,62,0.08), transparent 55%),
+      radial-gradient(ellipse at bottom right, rgba(51,84,76,0.10), transparent 55%),
+      var(--paper);
+    background-attachment: fixed;
+    color: var(--ink);
+    font-family: 'Source Sans 3', sans-serif;
+    min-height:100vh;
+    position:relative;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image:
+      repeating-linear-gradient(0deg, var(--line) 0px, transparent 1px, transparent 120px, var(--line) 121px),
+      repeating-linear-gradient(90deg, var(--line) 0px, transparent 1px, transparent 120px, var(--line) 121px);
+    opacity:0.35;
+    pointer-events:none;
+  }
+
+  header{
+    text-align:center;
+    padding: 2rem 1.5rem 1.6rem;
+    position:relative;
+    z-index:1;
+  }
+  .langbar{
+    display:flex;
+    justify-content:center;
+    gap:0.4rem;
+    margin-bottom:1.4rem;
+  }
+  .lang-btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.68rem;
+    letter-spacing:0.08em;
+    color: var(--ink-soft);
+    background:transparent;
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:0.3rem 0.7rem;
+    cursor:pointer;
+    transition: all 0.15s ease;
+  }
+  .lang-btn:hover{ border-color:var(--brass); color:var(--ink); }
+  .lang-btn.active{
+    background:var(--teal);
+    border-color:var(--teal);
+    color:var(--paper);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.28em;
+    text-transform:uppercase;
+    color:var(--teal);
+    margin-bottom:0.8rem;
+  }
+  h1{
+    font-family:'Cormorant Garamond', serif;
+    font-weight:600;
+    font-size:clamp(2.4rem, 6vw, 4.2rem);
+    margin:0;
+    letter-spacing:0.01em;
+    color:var(--ink);
+  }
+  h1 em{
+    font-style:italic;
+    color:var(--brass);
+  }
+  .sub{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-size:1.15rem;
+    color:var(--ink-soft);
+    margin-top:0.5rem;
+  }
+
+  .compass{
+    width:56px; height:56px;
+    margin:0 auto 1.2rem;
+    opacity:0.85;
+    animation: drift 14s linear infinite;
+    transform-origin:center;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .compass{animation:none;}
+  }
+  @keyframes drift{
+    0%{transform:rotate(0deg);}
+    100%{transform:rotate(360deg);}
+  }
+
+  main{
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+    position:relative;
+    z-index:1;
+  }
+
+  form{
+    display:flex;
+    gap:0;
+    background: var(--paper-dark);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 8px 24px rgba(42,33,24,0.12);
+    padding: 6px;
+    max-width: 640px;
+    margin: 0 auto 0.6rem;
+  }
+  form:focus-within{
+    box-shadow: 0 0 0 2px var(--brass-bright), 0 8px 24px rgba(42,33,24,0.12);
+  }
+  input[type="text"]{
+    flex:1;
+    border:none;
+    background:transparent;
+    padding: 0.9rem 1.1rem;
+    font-family:'Source Sans 3', sans-serif;
+    font-size:1rem;
+    color:var(--ink);
+    outline:none;
+  }
+  input[type="text"]::placeholder{color:#8a7a5f;}
+  button{
+    border:none;
+    background: var(--ink);
+    color: var(--paper);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.78rem;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    padding: 0 1.6rem;
+    border-radius: 1px;
+    cursor:pointer;
+    transition: background 0.15s ease;
+  }
+  button:hover{ background: var(--teal); }
+  button:focus-visible, input:focus-visible{ outline: 2px solid var(--brass-bright); outline-offset:2px; }
+
+  .hint{
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.7rem;
+    letter-spacing:0.06em;
+    color: var(--ink-soft);
+    opacity:0.7;
+    margin: 0.9rem 0 2.2rem;
+  }
+
+  .filters{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap: 0.5rem;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.7rem;
+    letter-spacing:0.04em;
+    color: var(--ink-soft);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    cursor:pointer;
+    transition: all 0.15s ease;
+  }
+  .chip:hover{ border-color: var(--brass); color: var(--ink); }
+  .chip.active{
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+  .chip:focus-visible{ outline: 2px solid var(--brass-bright); outline-offset:2px; }
+
+  .status{
+    text-align:center;
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-size:1.2rem;
+    color: var(--ink-soft);
+    padding: 2rem 0;
+  }
+
+  .results-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--teal);
+    border-top:1px solid var(--line);
+    padding-top:0.9rem;
+    margin-bottom:1.4rem;
+    display:flex;
+    justify-content:space-between;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.1rem;
+  }
+  figure{
+    margin:0;
+    background:#fffdf7;
+    border:1px solid var(--line);
+    padding: 8px 8px 10px;
+    box-shadow: 0 6px 16px rgba(42,33,24,0.10);
+    transform: rotate(var(--tilt, 0deg));
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  figure:nth-child(3n){ --tilt: -1deg; }
+  figure:nth-child(3n+1){ --tilt: 0.8deg; }
+  figure:nth-child(3n+2){ --tilt: -0.4deg; }
+  figure:hover{
+    transform: rotate(0deg) translateY(-3px);
+    box-shadow: 0 12px 24px rgba(42,33,24,0.18);
+  }
+  figure a{ display:block; }
+  figure img{
+    width:100%;
+    height:150px;
+    object-fit:cover;
+    display:block;
+    filter: sepia(0.08) contrast(1.02);
+  }
+  figcaption{
+    font-family:'Source Sans 3', sans-serif;
+    font-size:0.78rem;
+    color: var(--ink-soft);
+    padding-top:0.5rem;
+    line-height:1.3;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .src{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.62rem;
+    color: var(--brass);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    padding-top:0.25rem;
+  }
+
+  footer{
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.05em;
+    color: var(--ink-soft);
+    opacity:0.75;
+    padding: 2.5rem 1.5rem 2rem;
+    border-top:1px solid var(--line);
+    position:relative;
+    z-index:1;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="langbar" id="langbar">
+    <button type="button" class="lang-btn" data-lang="en">EN</button>
+    <button type="button" class="lang-btn" data-lang="es">ES</button>
+    <button type="button" class="lang-btn" data-lang="ru">RU</button>
+  </div>
+  <svg class="compass" viewBox="0 0 100 100" fill="none">
+    <circle cx="50" cy="50" r="46" stroke="#a9843e" stroke-width="1.5"/>
+    <circle cx="50" cy="50" r="2.5" fill="#a9843e"/>
+    <path d="M50 8 L56 46 L50 50 L44 46 Z" fill="#2a2118"/>
+    <path d="M50 92 L56 54 L50 50 L44 54 Z" fill="#a9843e"/>
+    <path d="M8 50 L46 44 L50 50 L46 56 Z" fill="#33544c" opacity="0.6"/>
+    <path d="M92 50 L54 44 L50 50 L54 56 Z" fill="#33544c" opacity="0.6"/>
+  </svg>
+  <div class="eyebrow" data-i18n="eyebrow">Cartography · Archive · Search</div>
+  <h1 data-i18n="title">Private Web<em>Only hosters!</em></h1>
+  <p class="sub" data-i18n="subtitle">Find reference maps. [BETA]</p>
+</header>
+
+<main>
+  <form id="searchForm">
+    <input type="text" id="query" data-i18n-placeholder="placeholder" placeholder="e.g. world map 1862" autocomplete="off">
+    <button type="submit" data-i18n="searchBtn">Search</button>
+  </form>
+
+  <div class="filters" id="filters">
+    <button type="button" class="chip" data-mod="political map borders territories" data-i18n="chip1">Mapa Político</button>
+    <button type="button" class="chip" data-mod="historical antique old map" data-i18n="chip2">Mapa de la Época</button>
+    <button type="button" class="chip" data-mod="physical map terrain relief" data-i18n="chip3">Mapa Físico</button>
+    <button type="button" class="chip" data-mod="population demographics map" data-i18n="chip4">Tasa de Vida</button>
+    <button type="button" class="chip" data-mod="city plan urban map" data-i18n="chip5">Plano de Ciudad</button>
+    <button type="button" class="chip" data-mod="nautical chart maritime map" data-i18n="chip6">Carta Náutica</button>
+  </div>
+
+  <p class="hint" data-i18n="hint">Buscando mapas en Wikimedia Commons, Openverse y la Biblioteca del Congreso (EE. UU.)</p>
+
+  <div id="output"></div>
+</main>
+
+<footer data-i18n="footer">
+  Created by @braydonpepe | Powered with AI
+</footer>
+
+<script>
+  const translations = {
+    en: {
+      eyebrow: 'Cartography · Archive · Search',
+      title: 'Atlas <em>Finder</em>',
+      subtitle: "Chart a course to the map you're picturing",
+      placeholder: 'e.g. world map 1862, Europe 1914 political map…',
+      searchBtn: 'Search',
+      chip1: 'Political Map', chip2: 'Period Map', chip3: 'Physical Map',
+      chip4: 'Population Map', chip5: 'City Plan', chip6: 'Nautical Chart',
+      hint: 'Searching maps only, across Wikimedia Commons, Openverse and the Library of Congress',
+      statusSearching: q => `Charting the archive for "${q}"…`,
+      statusNone: q => `No maps found for "${q}". Try another course, or lift a filter.`,
+      resultsFound: n => `${n} maps found`,
+      footer: 'Created by @braydonpepe on Discord | Powered with AI'
+    },
+    es: {
+      eyebrow: 'Cartografía · Archivo · Búsqueda',
+      title: 'Atlas <em>Finder</em>',
+      subtitle: 'Traza el rumbo hacia el mapa que imaginás',
+      placeholder: 'ej. mapa del mundo 1862, Europa 1914 mapa político…',
+      searchBtn: 'Buscar',
+      chip1: 'Mapa Político', chip2: 'Mapa de la Época', chip3: 'Mapa Físico',
+      chip4: 'Mapa de Población', chip5: 'Plano de Ciudad', chip6: 'Carta Náutica',
+      hint: 'Buscando solo mapas, en Wikimedia Commons, Openverse y la Biblioteca del Congreso (EE. UU.)',
+      statusSearching: q => `Buscando en el archivo "${q}"…`,
+      statusNone: q => `No se encontraron mapas para "${q}". Probá otra búsqueda o quitá un filtro.`,
+      resultsFound: n => `${n} mapas encontrados`,
+      footer: 'Creado por @braydonpepe en Discord | Powered with AI'
+    },
+    ru: {
+      eyebrow: 'Картография · Архив · Поиск',
+      title: 'Atlas <em>Finder</em>',
+      subtitle: 'Проложите курс к карте, которую вы представляете',
+      placeholder: 'напр. карта мира 1862, Европа 1914 политическая карта…',
+      searchBtn: 'Искать',
+      chip1: 'Политическая карта', chip2: 'Карта эпохи', chip3: 'Физическая карта',
+      chip4: 'Карта населения', chip5: 'План города', chip6: 'Морская карта',
+      hint: 'Поиск только карт: Wikimedia Commons, Openverse и Библиотека Конгресса США',
+      statusSearching: q => `Ищем в архиве «${q}»…`,
+      statusNone: q => `Карты по запросу «${q}» не найдены. Попробуйте другой запрос или снимите фильтр.`,
+      resultsFound: n => `Найдено карт: ${n}`,
+      footer: 'Создано @braydonpepe в Discord | Powered with AI'
+    }
+  };
+
+  let currentLang = 'es';
+
+  function applyLang(lang){
+    currentLang = lang;
+    const t = translations[lang];
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      if (typeof t[key] === 'string') el.innerHTML = t[key];
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.dataset.i18nPlaceholder;
+      if (typeof t[key] === 'string') el.placeholder = t[key];
+    });
+    document.querySelectorAll('.lang-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.lang === lang);
+    });
+  }
+
+  document.getElementById('langbar').addEventListener('click', (e) => {
+    const btn = e.target.closest('.lang-btn');
+    if (!btn) return;
+    applyLang(btn.dataset.lang);
+  });
+
+  applyLang(currentLang);
+
+  const form = document.getElementById('searchForm');
+  const input = document.getElementById('query');
+  const output = document.getElementById('output');
+  const filters = document.getElementById('filters');
+
+  filters.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    chip.classList.toggle('active');
+  });
+
+  // Keywords that must appear somewhere in the title for a result to count as an actual map.
+  const MAP_WORDS = /\b(map|mapa|carte|karte|atlas|chart|plan|planisphere|globe|cartograph)/i;
+  // File types that indicate a book/document rather than a map image.
+  const NON_MAP_EXT = /\.(pdf|djvu|epub|docx?|pptx?)$/i;
+
+  function isMapResult(r){
+    if (NON_MAP_EXT.test(r.thumb) || NON_MAP_EXT.test(r.link)) return false;
+    return MAP_WORDS.test(r.title);
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const q = input.value.trim();
+    if (!q) return;
+
+    const t = translations[currentLang];
+    const activeMods = Array.from(filters.querySelectorAll('.chip.active'))
+      .map(c => c.dataset.mod);
+    // Always force "map" into the query itself so every source is biased toward maps.
+    const fullQuery = [q, 'map', ...activeMods].join(' ');
+
+    output.innerHTML = `<p class="status">${t.statusSearching(escapeHtml(q))}</p>`;
+
+    const settled = await Promise.allSettled([
+      fetchCommons(fullQuery),
+      fetchOpenverse(fullQuery),
+      fetchLOC(q, activeMods)
+    ]);
+
+    let results = [];
+    settled.forEach(r => {
+      if (r.status === 'fulfilled') results = results.concat(r.value);
+      else console.error(r.reason);
+    });
+
+    results = results.filter(isMapResult);
+
+    // De-duplicate by thumbnail URL.
+    const seen = new Set();
+    results = results.filter(r => {
+      if (seen.has(r.thumb)) return false;
+      seen.add(r.thumb);
+      return true;
+    });
+
+    if (results.length === 0) {
+      output.innerHTML = `<p class="status">${t.statusNone(escapeHtml(q))}</p>`;
+      return;
+    }
+
+    const cards = results.map(r => {
+      return `
+        <figure>
+          <a href="${r.link}" target="_blank" rel="noopener noreferrer">
+            <img src="${r.thumb}" alt="${r.title}" loading="lazy" onerror="this.closest('figure').remove()">
+          </a>
+          <figcaption>${r.title}</figcaption>
+          <div class="src">${r.source}</div>
+        </figure>`;
+    }).join('');
+
+    output.innerHTML = `
+      <div class="results-label">
+        <span>${t.resultsFound(results.length)}</span>
+        <span>"${escapeHtml(q)}"</span>
+      </div>
+      <div class="grid">${cards}</div>
+    `;
+  });
+
+  async function fetchCommons(q){
+    // Wikimedia Commons — public, CORS-enabled, no API key needed.
+    // "intitle:map" forces results whose filename actually mentions a map.
+    const params = new URLSearchParams({
+      action: 'query',
+      generator: 'search',
+      gsrsearch: `${q} intitle:map`,
+      gsrnamespace: '6',
+      gsrlimit: '24',
+      prop: 'imageinfo',
+      iiprop: 'url|extmetadata|mime',
+      iiurlwidth: '400',
+      format: 'json',
+      origin: '*'
+    });
+    const url = `https://commons.wikimedia.org/w/api.php?${params.toString()}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Request failed: ' + res.status);
+    const data = await res.json();
+    const pages = data.query && data.query.pages ? Object.values(data.query.pages) : [];
+
+    return pages
+      .filter(p => p.imageinfo && p.imageinfo[0] && (p.imageinfo[0].mime || '').startsWith('image/'))
+      .map(p => {
+        const info = p.imageinfo[0];
+        const meta = info.extmetadata || {};
+        const rawTitle = (meta.ObjectName && meta.ObjectName.value) || p.title.replace(/^File:/, '').replace(/\.[a-zA-Z0-9]+$/, '');
+        const artist = meta.Artist ? stripTags(meta.Artist.value) : '';
+        return {
+          thumb: info.thumburl || info.url,
+          link: info.descriptionurl || info.url,
+          title: escapeHtml(rawTitle.replace(/_/g, ' ')),
+          source: escapeHtml(artist ? `Wikimedia Commons · ${artist}` : 'Wikimedia Commons')
+        };
+      });
+  }
+
+  async function fetchOpenverse(q){
+    // Openverse — aggregates Flickr, museums, etc. Public, CORS-enabled.
+    try {
+      const url = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(q)}&page_size=16`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Openverse failed: ' + res.status);
+      const data = await res.json();
+      return (data.results || [])
+        .filter(r => r.thumbnail || r.url)
+        .map(r => ({
+          thumb: r.thumbnail || r.url,
+          link: r.foreign_landing_url || r.url,
+          title: escapeHtml(r.title || 'Untitled'),
+          source: escapeHtml(r.source ? `Openverse · ${r.source}` : 'Openverse')
+        }));
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  }
+
+  async function fetchLOC(q, mods){
+    // Library of Congress — scoped to the Maps division only, so books/photos never show up.
+    try {
+      const fullQuery = [q, ...mods].join(' ');
+      const url = `https://www.loc.gov/maps/?q=${encodeURIComponent(fullQuery)}&fo=json&c=16`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('LOC failed: ' + res.status);
+      const data = await res.json();
+      const items = data.results || [];
+      return items
+        .filter(it => it.image_url && it.image_url.length)
+        .map(it => ({
+          thumb: Array.isArray(it.image_url) ? it.image_url[it.image_url.length - 1] : it.image_url,
+          link: it.url || it.id,
+          title: escapeHtml(it.title || 'Untitled'),
+          source: 'Library of Congress'
+        }));
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  }
+
+  function stripTags(html){
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.textContent || div.innerText || '';
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+</script>
+
+</body>
+  </html>
+
