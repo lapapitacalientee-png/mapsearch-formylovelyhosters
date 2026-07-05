@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Map Search - For my hosters</title>
+<title>Private Web</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -271,6 +271,113 @@
     padding-top:0.25rem;
   }
 
+  .recommended{
+    max-width: 980px;
+    margin: 0 auto 2.4rem;
+    padding: 0 1.5rem;
+    position:relative;
+    z-index:1;
+  }
+  .recommended-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.18em;
+    color: var(--teal);
+    margin-bottom:0.8rem;
+  }
+  .recommended-track{
+    display:flex;
+    gap:1rem;
+    overflow-x:auto;
+    padding-bottom:0.4rem;
+  }
+  .rec-card{
+    flex:0 0 auto;
+    width:200px;
+    background:#fffdf7;
+    border:1px solid var(--line);
+    box-shadow: 0 6px 16px rgba(42,33,24,0.10);
+  }
+  .rec-card img{
+    width:100%;
+    height:130px;
+    object-fit:cover;
+    display:block;
+    filter: sepia(0.08) contrast(1.02);
+  }
+  .rec-body{ padding:0.6rem 0.7rem 0.8rem; }
+  .rec-year{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.7rem;
+    color: var(--brass);
+    letter-spacing:0.05em;
+  }
+  .rec-desc{
+    font-family:'Source Sans 3', sans-serif;
+    font-size:0.78rem;
+    color: var(--ink-soft);
+    margin-top:0.2rem;
+    line-height:1.3;
+  }
+
+  .suggest{
+    max-width: 640px;
+    margin: 2.8rem auto 0;
+    border-top:1px solid var(--line);
+    padding-top:1.8rem;
+  }
+  .suggest h2{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:1.4rem;
+    text-align:center;
+    margin:0 0 1rem;
+    color: var(--ink);
+  }
+  .suggest-form{
+    display:flex;
+    flex-direction:column;
+    gap:0.6rem;
+    background: var(--paper-dark);
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:1rem;
+  }
+  .suggest-form input, .suggest-form textarea{
+    border:1px solid var(--line);
+    background:#fffdf7;
+    padding:0.7rem 0.8rem;
+    font-family:'Source Sans 3', sans-serif;
+    font-size:0.9rem;
+    color:var(--ink);
+    border-radius:1px;
+    resize:vertical;
+  }
+  .suggest-form textarea{ min-height:70px; }
+  .suggest-form button{
+    align-self:flex-end;
+    margin-top:0.2rem;
+  }
+  .suggest-status{
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    color: var(--teal);
+    min-height:1.2em;
+  }
+  .suggest-status.error{ color:#a83232; }
+
+  .hp-field{
+    position:absolute !important;
+    width:1px; height:1px;
+    padding:0; margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
+
   footer{
     text-align:center;
     font-family:'IBM Plex Mono', monospace;
@@ -302,11 +409,16 @@
     <path d="M92 50 L54 44 L50 50 L54 56 Z" fill="#33544c" opacity="0.6"/>
   </svg>
   <div class="eyebrow" data-i18n="eyebrow">Cartography · Archive · Search</div>
-  <h1 data-i18n="title">Private Web<em>Only hosters!</em></h1>
-  <p class="sub" data-i18n="subtitle">Find reference maps. [BETA]</p>
+  <h1 data-i18n="title">Atlas <em>Finder</em></h1>
+  <p class="sub" data-i18n="subtitle">Chart a course to the image you're picturing</p>
 </header>
 
 <main>
+  <div class="recommended" id="recommendedSection" style="display:none;">
+    <div class="recommended-label">[RECOMMENDED MAPS]</div>
+    <div class="recommended-track" id="recommendedTrack"></div>
+  </div>
+
   <form id="searchForm">
     <input type="text" id="query" data-i18n-placeholder="placeholder" placeholder="e.g. world map 1862" autocomplete="off">
     <button type="submit" data-i18n="searchBtn">Search</button>
@@ -324,59 +436,98 @@
   <p class="hint" data-i18n="hint">Buscando mapas en Wikimedia Commons, Openverse y la Biblioteca del Congreso (EE. UU.)</p>
 
   <div id="output"></div>
+
+  <section class="suggest">
+    <h2 data-i18n="suggestTitle">Suggest a Map</h2>
+    <form class="suggest-form" id="suggestForm">
+      <input type="number" id="suggestYear" data-i18n-placeholder="suggestYear" placeholder="Year (e.g. 1914)" min="1000" max="2100">
+      <input type="url" id="suggestImage" data-i18n-placeholder="suggestImage" placeholder="Image URL" maxlength="500">
+      <textarea id="suggestDesc" data-i18n-placeholder="suggestDesc" placeholder="Short description" maxlength="300"></textarea>
+      <input type="text" id="suggestWebsite" name="website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button type="submit" data-i18n="suggestSubmit">Suggest Map</button>
+    </form>
+    <p class="suggest-status" id="suggestStatus"></p>
+  </section>
 </main>
 
 <footer data-i18n="footer">
-  Created by @braydonpepe | Powered with AI
+  Creado por @braydonpepe en Discord | Powered with AI
 </footer>
 
 <script>
   const translations = {
     en: {
       eyebrow: 'Cartography · Archive · Search',
-      title: 'Atlas <em>Finder</em>',
-      subtitle: "Chart a course to the map you're picturing",
+      title: 'Map <em>Finder</em>',
+      subtitle: 'Created by hosters, for hosters',
       placeholder: 'e.g. world map 1862, Europe 1914 political map…',
       searchBtn: 'Search',
       chip1: 'Political Map', chip2: 'Period Map', chip3: 'Physical Map',
       chip4: 'Population Map', chip5: 'City Plan', chip6: 'Nautical Chart',
-      hint: 'Searching maps only, across Wikimedia Commons, Openverse and the Library of Congress',
+      hint: 'Maps only — no books, no clutter',
       statusSearching: q => `Charting the archive for "${q}"…`,
       statusNone: q => `No maps found for "${q}". Try another course, or lift a filter.`,
       resultsFound: n => `${n} maps found`,
-      footer: 'Created by @braydonpepe on Discord | Powered with AI'
+      footer: 'Created by @braydonpepe on Discord | Powered with AI',
+      suggestTitle: 'Suggest a Map',
+      suggestYear: 'Year (e.g. 1914)',
+      suggestImage: 'Image URL',
+      suggestDesc: 'Short description',
+      suggestSubmit: 'Suggest Map',
+      suggestSending: 'Sending…',
+      suggestSuccess: 'Sent! The owner will review it on Discord.',
+      suggestError: "Couldn't send it — check the image URL and try again.",
+      suggestMissing: 'Fill in the year, image URL and description.'
     },
     es: {
       eyebrow: 'Cartografía · Archivo · Búsqueda',
-      title: 'Atlas <em>Finder</em>',
-      subtitle: 'Traza el rumbo hacia el mapa que imaginás',
+      title: 'Map <em>Finder</em>',
+      subtitle: 'Creada por hosters, para hosters',
       placeholder: 'ej. mapa del mundo 1862, Europa 1914 mapa político…',
       searchBtn: 'Buscar',
       chip1: 'Mapa Político', chip2: 'Mapa de la Época', chip3: 'Mapa Físico',
       chip4: 'Mapa de Población', chip5: 'Plano de Ciudad', chip6: 'Carta Náutica',
-      hint: 'Buscando solo mapas, en Wikimedia Commons, Openverse y la Biblioteca del Congreso (EE. UU.)',
+      hint: 'Solo mapas — sin libros, sin ruido',
       statusSearching: q => `Buscando en el archivo "${q}"…`,
       statusNone: q => `No se encontraron mapas para "${q}". Probá otra búsqueda o quitá un filtro.`,
       resultsFound: n => `${n} mapas encontrados`,
-      footer: 'Creado por @braydonpepe en Discord | Powered with AI'
+      footer: 'Creado por @braydonpepe en Discord | Powered with AI',
+      suggestTitle: 'Sugerir un Mapa',
+      suggestYear: 'Año (ej. 1914)',
+      suggestImage: 'URL de la imagen',
+      suggestDesc: 'Descripción breve',
+      suggestSubmit: 'Enviar sugerencia',
+      suggestSending: 'Enviando…',
+      suggestSuccess: '¡Enviado! El dueño lo va a revisar en Discord.',
+      suggestError: 'No se pudo enviar — revisá la URL de la imagen e intentá de nuevo.',
+      suggestMissing: 'Completá el año, la URL de la imagen y la descripción.'
     },
     ru: {
       eyebrow: 'Картография · Архив · Поиск',
-      title: 'Atlas <em>Finder</em>',
-      subtitle: 'Проложите курс к карте, которую вы представляете',
+      title: 'Map <em>Finder</em>',
+      subtitle: 'Создано хостерами, для хостеров',
       placeholder: 'напр. карта мира 1862, Европа 1914 политическая карта…',
       searchBtn: 'Искать',
       chip1: 'Политическая карта', chip2: 'Карта эпохи', chip3: 'Физическая карта',
       chip4: 'Карта населения', chip5: 'План города', chip6: 'Морская карта',
-      hint: 'Поиск только карт: Wikimedia Commons, Openverse и Библиотека Конгресса США',
+      hint: 'Только карты — без книг и лишнего',
       statusSearching: q => `Ищем в архиве «${q}»…`,
       statusNone: q => `Карты по запросу «${q}» не найдены. Попробуйте другой запрос или снимите фильтр.`,
       resultsFound: n => `Найдено карт: ${n}`,
-      footer: 'Создано @braydonpepe в Discord | Powered with AI'
+      footer: 'Создано @braydonpepe в Discord | Powered with AI',
+      suggestTitle: 'Предложить карту',
+      suggestYear: 'Год (напр. 1914)',
+      suggestImage: 'URL изображения',
+      suggestDesc: 'Краткое описание',
+      suggestSubmit: 'Отправить',
+      suggestSending: 'Отправка…',
+      suggestSuccess: 'Отправлено! Владелец рассмотрит это в Discord.',
+      suggestError: 'Не удалось отправить — проверьте URL изображения и попробуйте снова.',
+      suggestMissing: 'Заполните год, URL изображения и описание.'
     }
   };
 
-  let currentLang = 'es';
+  let currentLang = 'en';
 
   function applyLang(lang){
     currentLang = lang;
@@ -417,10 +568,56 @@
   const MAP_WORDS = /\b(map|mapa|carte|karte|atlas|chart|plan|planisphere|globe|cartograph)/i;
   // File types that indicate a book/document rather than a map image.
   const NON_MAP_EXT = /\.(pdf|djvu|epub|docx?|pptx?)$/i;
+  // Common non-cartographic uses of the word "map" — the strict sieve rejects these.
+  const BLACKLIST = /\b(sitemap|site\s?map|road\s?map(?!\s*(of|to)\s*(the\s+)?(world|europe|asia|africa|america))|mind\s?map|heat\s?map|brain\s?map(ping)?|genome\s?map(ping)?|karnaugh\s?map|bitmap|concept\s?map|mapping\s+software|career\s?map)\b/i;
 
   function isMapResult(r){
     if (NON_MAP_EXT.test(r.thumb) || NON_MAP_EXT.test(r.link)) return false;
+    if (BLACKLIST.test(r.title)) return false;
     return MAP_WORDS.test(r.title);
+  }
+
+  function extractYear(q){
+    const m = q.match(/\b(1[0-9]{3}|20[0-9]{2})\b/);
+    return m ? m[1] : null;
+  }
+
+  // Detects whether the query is about a whole region (world/continent) so we can
+  // steer sources toward full political maps instead of small local/regional scans.
+  const SCOPE_MAP = {
+    world: ['world', 'global', 'planisphere', 'mundo'],
+    europe: ['europe', 'europa'],
+    asia: ['asia'],
+    africa: ['africa', 'áfrica'],
+    'north america': ['north america', 'norteamérica', 'norte américa'],
+    'south america': ['south america', 'sudamérica', 'suramérica'],
+    america: ['america', 'américa', 'americas'],
+    oceania: ['oceania', 'oceanía']
+  };
+  const CATEGORY_MAP = {
+    world: 'Political maps of the world',
+    europe: 'Political maps of Europe',
+    asia: 'Political maps of Asia',
+    africa: 'Political maps of Africa',
+    'north america': 'Political maps of North America',
+    'south america': 'Political maps of South America',
+    america: 'Political maps of the Americas',
+    oceania: 'Political maps of Oceania'
+  };
+
+  function detectScope(q){
+    const lower = q.toLowerCase();
+    for (const key of Object.keys(SCOPE_MAP)) {
+      if (SCOPE_MAP[key].some(word => lower.includes(word))) return key;
+    }
+    return null;
+  }
+
+  function passesScope(r, scopeWords){
+    if (r.fromCategory) return true;
+    if (!scopeWords) return true;
+    const t = r.title.toLowerCase();
+    return scopeWords.some(w => t.includes(w));
   }
 
   form.addEventListener('submit', async (e) => {
@@ -434,13 +631,22 @@
     // Always force "map" into the query itself so every source is biased toward maps.
     const fullQuery = [q, 'map', ...activeMods].join(' ');
 
+    const scope = detectScope(q);
+    const scopeWords = scope ? SCOPE_MAP[scope] : null;
+    const category = scope ? CATEGORY_MAP[scope] : null;
+
     output.innerHTML = `<p class="status">${t.statusSearching(escapeHtml(q))}</p>`;
 
-    const settled = await Promise.allSettled([
+    const tasks = [
       fetchCommons(fullQuery),
       fetchOpenverse(fullQuery),
-      fetchLOC(q, activeMods)
-    ]);
+      fetchLOC(q, activeMods),
+      fetchArchive(fullQuery),
+      fetchEuropeana(fullQuery)
+    ];
+    if (category) tasks.push(fetchCommonsCategory(category));
+
+    const settled = await Promise.allSettled(tasks);
 
     let results = [];
     settled.forEach(r => {
@@ -448,7 +654,7 @@
       else console.error(r.reason);
     });
 
-    results = results.filter(isMapResult);
+    results = results.filter(r => isMapResult(r) && passesScope(r, scopeWords));
 
     // De-duplicate by thumbnail URL.
     const seen = new Set();
@@ -457,6 +663,16 @@
       seen.add(r.thumb);
       return true;
     });
+
+    // If the search mentions a specific year, float exact matches to the top.
+    const year = extractYear(q);
+    if (year) {
+      results.sort((a, b) => {
+        const aHas = a.title.includes(year) ? 0 : 1;
+        const bHas = b.title.includes(year) ? 0 : 1;
+        return aHas - bHas;
+      });
+    }
 
     if (results.length === 0) {
       output.innerHTML = `<p class="status">${t.statusNone(escapeHtml(q))}</p>`;
@@ -564,6 +780,185 @@
     }
   }
 
+  async function fetchArchive(q){
+    // Internet Archive — huge historical scan collection. Public, CORS-enabled.
+    try {
+      const params = new URLSearchParams();
+      params.set('q', `${q} AND mediatype:(image)`);
+      params.append('fl[]', 'identifier');
+      params.append('fl[]', 'title');
+      params.set('rows', '16');
+      params.set('page', '1');
+      params.set('output', 'json');
+      const url = `https://archive.org/advancedsearch.php?${params.toString()}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Archive.org failed: ' + res.status);
+      const data = await res.json();
+      const docs = (data.response && data.response.docs) || [];
+      return docs
+        .filter(d => d.identifier)
+        .map(d => ({
+          thumb: `https://archive.org/services/img/${d.identifier}`,
+          link: `https://archive.org/details/${d.identifier}`,
+          title: escapeHtml(d.title || 'Untitled'),
+          source: 'Internet Archive'
+        }));
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  }
+
+  async function fetchCommonsCategory(category){
+    // Targets Commons categories like "Political maps of Europe" directly —
+    // this is how we reliably surface full, country-colored political maps
+    // instead of random small regional scans.
+    try {
+      const params = new URLSearchParams({
+        action: 'query',
+        generator: 'search',
+        gsrsearch: `incategory:"${category}"`,
+        gsrnamespace: '6',
+        gsrlimit: '20',
+        prop: 'imageinfo',
+        iiprop: 'url|extmetadata|mime',
+        iiurlwidth: '400',
+        format: 'json',
+        origin: '*'
+      });
+      const url = `https://commons.wikimedia.org/w/api.php?${params.toString()}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Commons category failed: ' + res.status);
+      const data = await res.json();
+      const pages = data.query && data.query.pages ? Object.values(data.query.pages) : [];
+      return pages
+        .filter(p => p.imageinfo && p.imageinfo[0] && (p.imageinfo[0].mime || '').startsWith('image/'))
+        .map(p => {
+          const info = p.imageinfo[0];
+          const meta = info.extmetadata || {};
+          const rawTitle = (meta.ObjectName && meta.ObjectName.value) || p.title.replace(/^File:/, '').replace(/\.[a-zA-Z0-9]+$/, '');
+          return {
+            thumb: info.thumburl || info.url,
+            link: info.descriptionurl || info.url,
+            title: escapeHtml(rawTitle.replace(/_/g, ' ')),
+            source: 'Wikimedia Commons',
+            fromCategory: true
+          };
+        });
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  }
+
+  async function fetchEuropeana(q){
+    // Europeana — aggregates museums, libraries and archives across Europe. Public demo key.
+    try {
+      const params = new URLSearchParams({
+        wskey: 'api2demo',
+        query: q,
+        media: 'true',
+        rows: '16'
+      });
+      params.append('qf', 'TYPE:IMAGE');
+      const url = `https://api.europeana.eu/record/v2/search.json?${params.toString()}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Europeana failed: ' + res.status);
+      const data = await res.json();
+      const items = data.items || [];
+      return items
+        .filter(it => it.edmPreview && it.edmPreview[0])
+        .map(it => ({
+          thumb: it.edmPreview[0],
+          link: it.guid,
+          title: escapeHtml((it.title && it.title[0]) || 'Untitled'),
+          source: escapeHtml(it.dataProvider && it.dataProvider[0] ? `Europeana · ${it.dataProvider[0]}` : 'Europeana')
+        }));
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  }
+
+  // ── [RECOMMENDED MAPS] ──────────────────────────────────────────────
+  // This static page has no server, so approved maps live right here in
+  // the code. After you review a suggestion in Discord and want to approve
+  // it, add a line below with its year, image URL and description, then
+  // re-share/re-host this file. New entries show up at the very top.
+  const RECOMMENDED_MAPS = [
+    // { year: 1914, image: 'https://example.com/europe1914.jpg', description: 'Europe on the eve of WWI' },
+  ];
+
+  function renderRecommended(){
+    const section = document.getElementById('recommendedSection');
+    const track = document.getElementById('recommendedTrack');
+    if (!RECOMMENDED_MAPS.length) { section.style.display = 'none'; return; }
+    track.innerHTML = RECOMMENDED_MAPS.map(m => `
+      <div class="rec-card">
+        <img src="${m.image}" alt="${escapeHtml(String(m.year))}" loading="lazy">
+        <div class="rec-body">
+          <div class="rec-year">${escapeHtml(String(m.year))}</div>
+          <div class="rec-desc">${escapeHtml(m.description || '')}</div>
+        </div>
+      </div>
+    `).join('');
+    section.style.display = 'block';
+  }
+  renderRecommended();
+
+  // ── Suggest a Map → Discord webhook ─────────────────────────────────
+  const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1523199169290834041/ty7pSw3AOPy3XPxZVy0X8brYSeGI9U8IXxuZrvsfXUTYt9mPEpppREdurz08zC2HSjoC';
+
+  const suggestForm = document.getElementById('suggestForm');
+  const suggestStatus = document.getElementById('suggestStatus');
+
+  suggestForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const t = translations[currentLang];
+    const year = document.getElementById('suggestYear').value.trim();
+    const image = document.getElementById('suggestImage').value.trim();
+    const desc = document.getElementById('suggestDesc').value.trim();
+
+    suggestStatus.classList.remove('error');
+
+    if (!year || !image || !desc) {
+      suggestStatus.textContent = t.suggestMissing;
+      suggestStatus.classList.add('error');
+      return;
+    }
+
+    suggestStatus.textContent = t.suggestSending;
+
+    const payload = {
+      embeds: [{
+        title: '🗺️ New Map Suggestion — Map Finder',
+        color: 0xA9843E,
+        fields: [
+          { name: 'Year', value: String(year), inline: true }
+        ],
+        description: desc,
+        image: { url: image },
+        footer: { text: 'Approve by adding it to RECOMMENDED_MAPS in the site code' },
+        timestamp: new Date().toISOString()
+      }]
+    };
+
+    try {
+      const res = await fetch(DISCORD_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Webhook failed: ' + res.status);
+      suggestStatus.textContent = t.suggestSuccess;
+      suggestForm.reset();
+    } catch (err) {
+      console.error(err);
+      suggestStatus.textContent = t.suggestError;
+      suggestStatus.classList.add('error');
+    }
+  });
+
   function stripTags(html){
     const div = document.createElement('div');
     div.innerHTML = html;
@@ -578,5 +973,4 @@
 </script>
 
 </body>
-  </html>
-
+</html>
