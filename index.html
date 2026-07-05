@@ -368,6 +368,36 @@
   }
   .suggest-status.error{ color:#a83232; }
 
+  .tut{
+    background:#fffdf7;
+    border:1px solid var(--line);
+    border-radius:1px;
+    padding:0.5rem 0.8rem;
+    font-family:'Source Sans 3', sans-serif;
+  }
+  .tut summary{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.03em;
+    color: var(--teal);
+    cursor:pointer;
+    list-style:none;
+  }
+  .tut summary::-webkit-details-marker{ display:none; }
+  .tut summary::before{
+    content:"+ ";
+    color: var(--brass);
+  }
+  .tut[open] summary::before{ content:"– "; }
+  .tut ol{
+    margin:0.6rem 0 0.2rem;
+    padding-left:1.2rem;
+    font-size:0.82rem;
+    color: var(--ink-soft);
+    line-height:1.5;
+  }
+  .tut li{ margin-bottom:0.35rem; }
+
   .hp-field{
     position:absolute !important;
     width:1px; height:1px;
@@ -442,6 +472,15 @@
     <form class="suggest-form" id="suggestForm">
       <input type="number" id="suggestYear" data-i18n-placeholder="suggestYear" placeholder="Year (e.g. 1914)" min="1000" max="2100">
       <input type="url" id="suggestImage" data-i18n-placeholder="suggestImage" placeholder="Image URL" maxlength="500">
+      <details class="tut">
+        <summary data-i18n="tutSummary">Don't have an image URL? Here's how (Imgur)</summary>
+        <ol>
+          <li data-i18n="tutStep1">Go to imgur.com — no account needed.</li>
+          <li data-i18n="tutStep2">Click "New post" and upload or drag in your map image.</li>
+          <li data-i18n="tutStep3">Once it's uploaded, right-click the image and choose "Copy image address" (on phone: press and hold the image, then "Copy image link").</li>
+          <li data-i18n="tutStep4">Paste that link into the Image URL field above — it should end in .jpg, .png or .gif.</li>
+        </ol>
+      </details>
       <textarea id="suggestDesc" data-i18n-placeholder="suggestDesc" placeholder="Short description" maxlength="300"></textarea>
       <input type="text" id="suggestWebsite" name="website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
       <button type="submit" data-i18n="suggestSubmit">Suggest Map</button>
@@ -477,7 +516,12 @@
       suggestSending: 'Sending…',
       suggestSuccess: 'Sent! The owner will review it on Discord.',
       suggestError: "Couldn't send it — check the image URL and try again.",
-      suggestMissing: 'Fill in the year, image URL and description.'
+      suggestMissing: 'Fill in the year, image URL and description.',
+      tutSummary: "Don't have an image URL? Here's how (Imgur)",
+      tutStep1: 'Go to imgur.com — no account needed.',
+      tutStep2: 'Click "New post" and upload or drag in your map image.',
+      tutStep3: 'Once it\'s uploaded, right-click the image and choose "Copy image address" (on phone: press and hold the image, then "Copy image link").',
+      tutStep4: 'Paste that link into the Image URL field above — it should end in .jpg, .png or .gif.'
     },
     es: {
       eyebrow: 'Cartografía · Archivo · Búsqueda',
@@ -500,7 +544,12 @@
       suggestSending: 'Enviando…',
       suggestSuccess: '¡Enviado! El dueño lo va a revisar en Discord.',
       suggestError: 'No se pudo enviar — revisá la URL de la imagen e intentá de nuevo.',
-      suggestMissing: 'Completá el año, la URL de la imagen y la descripción.'
+      suggestMissing: 'Completá el año, la URL de la imagen y la descripción.',
+      tutSummary: '¿No tenés una URL de imagen? Así se hace (Imgur)',
+      tutStep1: 'Entrá a imgur.com — no hace falta cuenta.',
+      tutStep2: 'Tocá "New post" y subí o arrastrá tu imagen del mapa.',
+      tutStep3: 'Una vez subida, hacé clic derecho sobre la imagen y elegí "Copiar dirección de la imagen" (en el celular: mantené presionada la imagen y tocá "Copiar enlace de la imagen").',
+      tutStep4: 'Pegá ese link en el campo URL de la imagen de arriba — debería terminar en .jpg, .png o .gif.'
     },
     ru: {
       eyebrow: 'Картография · Архив · Поиск',
@@ -523,7 +572,12 @@
       suggestSending: 'Отправка…',
       suggestSuccess: 'Отправлено! Владелец рассмотрит это в Discord.',
       suggestError: 'Не удалось отправить — проверьте URL изображения и попробуйте снова.',
-      suggestMissing: 'Заполните год, URL изображения и описание.'
+      suggestMissing: 'Заполните год, URL изображения и описание.',
+      tutSummary: 'Нет ссылки на изображение? Вот как (Imgur)',
+      tutStep1: 'Зайдите на imgur.com — аккаунт не нужен.',
+      tutStep2: 'Нажмите «New post» и загрузите или перетащите изображение карты.',
+      tutStep3: 'После загрузки нажмите правой кнопкой на изображение и выберите «Copy image address» (на телефоне: нажмите и удерживайте изображение, затем «Copy image link»).',
+      tutStep4: 'Вставьте эту ссылку в поле URL изображения выше — она должна заканчиваться на .jpg, .png или .gif.'
     }
   };
 
